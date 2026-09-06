@@ -37,9 +37,9 @@ LOG_FILE="${LOG_DIR}/ha_console.log"
 mkdir -p "${LOG_DIR}"
 
 # -----------------------------------------------------------
-# Java 21 automatisch installieren (Temurin)
+# Java 25 automatisch installieren (Temurin)
 # -----------------------------------------------------------
-JRE_DIR="${DATA_DIR}/.jre/21"
+JRE_DIR="${DATA_DIR}/.jre/25"                     # CHANGED FOR JAVA 25
 JAVA_HOME="${JRE_DIR}"
 JAVA_BIN="${JAVA_HOME}/bin/java"
 
@@ -48,7 +48,7 @@ install_java() {
     return 0
   fi
 
-  log_info "Java 21 nicht gefunden – installiere Temurin JRE"
+  log_info "Java 25 nicht gefunden – installiere Temurin JRE" # CHANGED FOR JAVA 25
 
   local arch adoptium_arch
   arch="$(uname -m)"
@@ -62,8 +62,9 @@ install_java() {
   esac
 
   mkdir -p "${JRE_DIR}"
-  TMP="/tmp/jre21.tar.gz"
-  URL="https://api.adoptium.net/v3/binary/latest/21/ga/linux/${adoptium_arch}/jre/hotspot/normal/eclipse?project=jdk"
+  TMP="/tmp/jre25.tar.gz"                         # CHANGED FOR JAVA 25
+  # CHANGED FOR JAVA 25 (Updated endpoint URL to fetch v25)
+  URL="https://adoptium.net{adoptium_arch}/jre/hotspot/normal/eclipse?project=jdk"
 
   curl -fL --retry 3 --retry-delay 2 "${URL}" -o "${TMP}"
   rm -rf "${JRE_DIR:?}/"*
