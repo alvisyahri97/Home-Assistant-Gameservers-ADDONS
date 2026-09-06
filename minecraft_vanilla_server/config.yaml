@@ -1,10 +1,9 @@
-name: "Minecraft Vanilla Dedicated Server"
-slug: minecraft_vanilla_server
+name: "Minecraft Bedrock Dedicated Server"
+slug: minecraft_bedrock_server
 description: >
-  Minecraft Vanilla Dedicated Server for Home Assistant OS.
-  Automatically installs Java, accepts the Minecraft EULA,
-  downloads the selected server version and stores all data
-  persistently in /share.
+  Minecraft Bedrock Dedicated Server for Home Assistant OS.
+  Automatically downloads the latest Bedrock server binary and stores
+  all data persistently in /share. Does not require Java.
 version: "0.0.2"
 
 arch:
@@ -16,32 +15,18 @@ boot: auto
 init: false
 host_network: false
 
-# Container läuft IMMER auf 25565
-# Der Host-Port kann im HA UI geändert werden
+# Bedrock requires UDP port 19132
+# The host port can be changed in the HA UI
 ports:
-  25565/tcp: 25565
+  19132/udp: 19132
 ports_description:
-  25565/tcp: "Minecraft server port (container fixed to 25565)"
+  19132/udp: "Minecraft Bedrock server port (container fixed to 19132 UDP)"
 
 map:
   - share:rw
 
 options:
-  data_dir: "/share/minecraft-vanilla"
-
-  # RAM (MB)
-  xms_mb: 1024
-  xmx_mb: 4096
-
-  # "latest" oder z.B. "1.21.1"
-  mc_version: "latest"
-
-  # Optional: feste Server-JAR URL (überschreibt mc_version)
-  server_jar_url: ""
+  data_dir: "/share/minecraft-bedrock"
 
 schema:
   data_dir: str
-  xms_mb: int
-  xmx_mb: int
-  mc_version: str
-  server_jar_url: str?
