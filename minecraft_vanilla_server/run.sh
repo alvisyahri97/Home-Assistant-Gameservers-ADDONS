@@ -15,12 +15,11 @@ echo " Minecraft Bedrock Dedicated Server (Home Assistant Add-on)"
 echo "-----------------------------------------------------------"
 
 # -----------------------------------------------------------
-# Optionen (Removed Java RAM settings as C++ handles memory natively)
+# Optionen 
 # -----------------------------------------------------------
 DATA_DIR="$(jq -r '.data_dir' /data/options.json 2>/dev/null || echo '/share/minecraft-bedrock')"
 [[ "${DATA_DIR}" == "null" || -z "${DATA_DIR}" ]] && DATA_DIR="/share/minecraft-bedrock"
 
-# Bedrock relies on UDP port 19132 by default
 CONTAINER_PORT="19132"
 
 mkdir -p "${DATA_DIR}"
@@ -31,20 +30,21 @@ LOG_FILE="${LOG_DIR}/ha_console.log"
 mkdir -p "${LOG_DIR}"
 
 # -----------------------------------------------------------
-# Bedrock Server-ZIP ermitteln 
+# Bedrock Server-ZIP über offizielle API ermitteln 
 # -----------------------------------------------------------
-# Microsoft does not have a clean API for Bedrock downloads, 
-# so we scrape the official download page for the Linux binary URL.
 BEDROCK_ZIP="bedrock_server.zip"
 URL_MARKER=".bedrock_url.txt"
 
 get_latest_bedrock_url() {
-  curl -sL -H "Accept-Language: en-US,en;q=0.9" https://www.minecraft.net/en-us/download/server/bedrock | grep -o 'https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9\.]*\.zip' | head -n1
+  # Use the official JSON API to bypass HTML changes
+  curl -sL "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links" | \
+  jq -r '.result.links[] | select(.downloadType=="serverBedrockLinux") | .downloadUrl'
 }
 
-DOWNLOAD_URL="$(get_latest_bedrock_url)"
+# The '|| true' prevents the script from silently crashing if a network error occurs
+DOWNLOAD_URL="$(get_latest_bedrock_url || true)"
 
-if [[ -z "${DOWNLOAD_URL}" ]]; then
+if [[ -z "${DOWNLOAD_URL}" || "${DOWNLOAD_URL}" == "null" ]]; then
   log_error "Konnte die Download-URL für den Bedrock-Server nicht ermitteln."
   exit 1
 fi
@@ -55,7 +55,6 @@ if [[ ! -f "${BEDROCK_ZIP}" || ! -f "${URL_MARKER}" || "$(cat "${URL_MARKER}")" 
   curl -fL --retry 3 --retry-delay 2 "${DOWNLOAD_URL}" -o "${BEDROCK_ZIP}"
   
   log_info "Entpacke Server-Dateien..."
-  # Extacts core files. We exclude config files so we don't overwrite your existing world settings on update.
   unzip -o "${BEDROCK_ZIP}" -x "server.properties" "permissions.json" "allowlist.json" "valid_known_packs.json" > /dev/null 2>&1 || true
   
   # If config files don't exist yet (first run), extract them specifically
@@ -91,6 +90,5 @@ echo "-----------------------------------------------------------"
   echo "==========================================================="
 } >> "${LOG_FILE}"
 
-# Bedrock requires LD_LIBRARY_PATH to point to its own directory for included shared libraries
 export LD_LIBRARY_PATH=.
 exec ./bedrock_server 2>&1 | tee -a "${LOG_FILE}"
