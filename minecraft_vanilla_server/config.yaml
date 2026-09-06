@@ -32,6 +32,7 @@ options:
   difficulty: "easy"
   max_players: 10
   server_portv6: 19133
+  allow_list: false
 
 schema:
   data_dir: str
@@ -40,3 +41,4 @@ schema:
   difficulty: list(peaceful|easy|normal|hard)
   max_players: int
   server_portv6: port
+  allow_list: bool
