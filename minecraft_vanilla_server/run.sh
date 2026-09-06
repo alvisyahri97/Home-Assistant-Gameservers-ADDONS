@@ -48,7 +48,7 @@ install_java() {
     return 0
   fi
 
-  log_info "Java 25 nicht gefunden – installiere Temurin JRE" # CHANGED FOR JAVA 25
+  log_info "Java 25 nicht gefunden – installiere Temurin JRE" 
 
   local arch adoptium_arch
   arch="$(uname -m)"
@@ -62,9 +62,10 @@ install_java() {
   esac
 
   mkdir -p "${JRE_DIR}"
-  TMP="/tmp/jre25.tar.gz"                         # CHANGED FOR JAVA 25
-  # CHANGED FOR JAVA 25 (Updated endpoint URL to fetch v25)
-  URL="https://adoptium.net/${adoptium_arch}/jre/hotspot/normal/eclipse?project=jdk"
+  TMP="/tmp/jre25.tar.gz"  
+  
+  # CORRECTED ADOPTIUM API ENDPOINT
+  URL="https://api.adoptium.net/v3/binary/latest/25/ga/linux/${adoptium_arch}/jre/hotspot/normal/eclipse"
 
   curl -fL --retry 3 --retry-delay 2 "${URL}" -o "${TMP}"
   rm -rf "${JRE_DIR:?}/"*
