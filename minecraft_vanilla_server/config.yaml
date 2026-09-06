@@ -4,7 +4,7 @@ description: >
   Minecraft Bedrock Dedicated Server for Home Assistant OS.
   Automatically downloads the latest Bedrock server binary and stores
   all data persistently in /share. Does not require Java.
-version: "0.0.2"
+version: "0.0.3"
 
 arch:
   - amd64
@@ -15,18 +15,28 @@ boot: auto
 init: false
 host_network: false
 
-# Bedrock requires UDP port 19132
-# The host port can be changed in the HA UI
 ports:
   19132/udp: 19132
+  19133/udp: 19133
 ports_description:
-  19132/udp: "Minecraft Bedrock server port (container fixed to 19132 UDP)"
+  19132/udp: "Minecraft Bedrock server port (IPv4 UDP)"
+  19133/udp: "Minecraft Bedrock server port (IPv6 UDP - MUST be different from IPv4)"
 
 map:
   - share:rw
 
 options:
   data_dir: "/share/minecraft-bedrock"
+  server_name: "HA Bedrock Server"
+  gamemode: "survival"
+  difficulty: "easy"
+  max_players: 10
+  server_portv6: 19133
 
 schema:
   data_dir: str
+  server_name: str
+  gamemode: list(survival|creative|adventure)
+  difficulty: list(peaceful|easy|normal|hard)
+  max_players: int
+  server_portv6: port
