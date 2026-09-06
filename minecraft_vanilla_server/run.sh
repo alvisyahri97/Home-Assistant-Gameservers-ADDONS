@@ -35,6 +35,9 @@ MAX_PLAYERS="$(jq -r '.max_players' /data/options.json 2>/dev/null || echo '10')
 PORT_V6="$(jq -r '.server_portv6' /data/options.json 2>/dev/null || echo '19133')"
 [[ "${PORT_V6}" == "null" ]] && PORT_V6="19133"
 
+ALLOW_LIST="$(jq -r '.allow_list' /data/options.json 2>/dev/null || echo 'false')"
+[[ "${ALLOW_LIST}" == "null" ]] && ALLOW_LIST="false"
+
 CONTAINER_PORT="19132"
 
 mkdir -p "${DATA_DIR}"
@@ -96,6 +99,7 @@ if [[ -f "./server.properties" ]]; then
   sed -i "s/^gamemode=.*/gamemode=${GAMEMODE}/" ./server.properties || true
   sed -i "s/^difficulty=.*/difficulty=${DIFFICULTY}/" ./server.properties || true
   sed -i "s/^max-players=.*/max-players=${MAX_PLAYERS}/" ./server.properties || true
+  sed -i "s/^allow-list=.*/allow-list=${ALLOW_LIST}/" ./server.properties || true
 fi
 
 # -----------------------------------------------------------
@@ -104,6 +108,7 @@ fi
 log_info "Starte Minecraft Bedrock Server"
 log_info "Server Name     : ${SERVER_NAME}"
 log_info "Mode/Difficulty : ${GAMEMODE} / ${DIFFICULTY}"
+log_info "Allow List      : ${ALLOW_LIST}"
 log_info "Port (IPv4)     : ${CONTAINER_PORT} (UDP)"
 log_info "Port (IPv6)     : ${PORT_V6} (UDP)"
 log_info "Datenverzeichnis: ${DATA_DIR}"
