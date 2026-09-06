@@ -37,7 +37,8 @@ URL_MARKER=".bedrock_url.txt"
 
 get_latest_bedrock_url() {
   # Use the official JSON API to bypass HTML changes
-  curl -sL "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links" | \
+  # Forced HTTP/1.1 and User-Agent to prevent Azure HTTP/2 errors
+  curl -sL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links" | \
   jq -r '.result.links[] | select(.downloadType=="serverBedrockLinux") | .downloadUrl'
 }
 
@@ -52,7 +53,8 @@ fi
 # Download & extract if it's a new installation or a new version is found
 if [[ ! -f "${BEDROCK_ZIP}" || ! -f "${URL_MARKER}" || "$(cat "${URL_MARKER}")" != "${DOWNLOAD_URL}" ]]; then
   log_info "Lade Bedrock Server herunter: ${DOWNLOAD_URL}"
-  curl -fL --retry 3 --retry-delay 2 "${DOWNLOAD_URL}" -o "${BEDROCK_ZIP}"
+  # Forced HTTP/1.1 and User-Agent to prevent Azure HTTP/2 stream drops
+  curl -fL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" --retry 3 --retry-delay 2 "${DOWNLOAD_URL}" -o "${BEDROCK_ZIP}"
   
   log_info "Entpacke Server-Dateien..."
   unzip -o "${BEDROCK_ZIP}" -x "server.properties" "permissions.json" "allowlist.json" "valid_known_packs.json" > /dev/null 2>&1 || true
