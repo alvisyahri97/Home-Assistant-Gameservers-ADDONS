@@ -4,7 +4,7 @@ description: >
   Minecraft Bedrock Dedicated Server for Home Assistant OS.
   Automatically downloads the latest Bedrock server binary and stores
   all data persistently in /share. Does not require Java.
-version: "0.0.3"
+version: "0.0.5"
 
 arch:
   - amd64
@@ -33,6 +33,7 @@ options:
   max_players: 10
   server_portv6: 19133
   allow_list: false
+  playit_secret: ""
 
 schema:
   data_dir: str
@@ -42,3 +43,4 @@ schema:
   max_players: int
   server_portv6: port
   allow_list: bool
+  playit_secret: str?
