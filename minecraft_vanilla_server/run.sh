@@ -15,10 +15,25 @@ echo " Minecraft Bedrock Dedicated Server (Home Assistant Add-on)"
 echo "-----------------------------------------------------------"
 
 # -----------------------------------------------------------
-# Optionen 
+# Optionen / Configuration UI
 # -----------------------------------------------------------
 DATA_DIR="$(jq -r '.data_dir' /data/options.json 2>/dev/null || echo '/share/minecraft-bedrock')"
 [[ "${DATA_DIR}" == "null" || -z "${DATA_DIR}" ]] && DATA_DIR="/share/minecraft-bedrock"
+
+SERVER_NAME="$(jq -r '.server_name' /data/options.json 2>/dev/null || echo 'HA Bedrock Server')"
+[[ "${SERVER_NAME}" == "null" ]] && SERVER_NAME="HA Bedrock Server"
+
+GAMEMODE="$(jq -r '.gamemode' /data/options.json 2>/dev/null || echo 'survival')"
+[[ "${GAMEMODE}" == "null" ]] && GAMEMODE="survival"
+
+DIFFICULTY="$(jq -r '.difficulty' /data/options.json 2>/dev/null || echo 'easy')"
+[[ "${DIFFICULTY}" == "null" ]] && DIFFICULTY="easy"
+
+MAX_PLAYERS="$(jq -r '.max_players' /data/options.json 2>/dev/null || echo '10')"
+[[ "${MAX_PLAYERS}" == "null" ]] && MAX_PLAYERS="10"
+
+PORT_V6="$(jq -r '.server_portv6' /data/options.json 2>/dev/null || echo '19133')"
+[[ "${PORT_V6}" == "null" ]] && PORT_V6="19133"
 
 CONTAINER_PORT="19132"
 
@@ -69,18 +84,28 @@ if [[ ! -f "${BEDROCK_ZIP}" || ! -f "${URL_MARKER}" || "$(cat "${URL_MARKER}")" 
 fi
 
 # -----------------------------------------------------------
-# server.properties – Port fest setzen
+# server.properties – Einstellungen anwenden
 # -----------------------------------------------------------
 if [[ -f "./server.properties" ]]; then
+  # Apply Port settings (Fixing the IPv6 crash)
   sed -i "s/^server-port=.*/server-port=${CONTAINER_PORT}/" ./server.properties || true
-  sed -i "s/^server-portv6=.*/server-portv6=${CONTAINER_PORT}/" ./server.properties || true
+  sed -i "s/^server-portv6=.*/server-portv6=${PORT_V6}/" ./server.properties || true
+  
+  # Apply Home Assistant UI settings
+  sed -i "s/^server-name=.*/server-name=\"${SERVER_NAME}\"/" ./server.properties || true
+  sed -i "s/^gamemode=.*/gamemode=${GAMEMODE}/" ./server.properties || true
+  sed -i "s/^difficulty=.*/difficulty=${DIFFICULTY}/" ./server.properties || true
+  sed -i "s/^max-players=.*/max-players=${MAX_PLAYERS}/" ./server.properties || true
 fi
 
 # -----------------------------------------------------------
 # Start
 # -----------------------------------------------------------
 log_info "Starte Minecraft Bedrock Server"
-log_info "Port (Container): ${CONTAINER_PORT} (UDP)"
+log_info "Server Name     : ${SERVER_NAME}"
+log_info "Mode/Difficulty : ${GAMEMODE} / ${DIFFICULTY}"
+log_info "Port (IPv4)     : ${CONTAINER_PORT} (UDP)"
+log_info "Port (IPv6)     : ${PORT_V6} (UDP)"
 log_info "Datenverzeichnis: ${DATA_DIR}"
 log_info "Logdatei        : ${LOG_FILE}"
 echo "-----------------------------------------------------------"
@@ -88,7 +113,7 @@ echo "-----------------------------------------------------------"
 {
   echo ""
   echo "==================== $(date -Iseconds) ===================="
-  echo "Minecraft Bedrock | Port ${CONTAINER_PORT} UDP"
+  echo "Minecraft Bedrock | IPv4: ${CONTAINER_PORT} | IPv6: ${PORT_V6}"
   echo "==========================================================="
 } >> "${LOG_FILE}"
 
