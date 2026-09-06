@@ -64,7 +64,7 @@ install_java() {
   mkdir -p "${JRE_DIR}"
   TMP="/tmp/jre25.tar.gz"                         # CHANGED FOR JAVA 25
   # CHANGED FOR JAVA 25 (Updated endpoint URL to fetch v25)
-  URL="https://adoptium.net{adoptium_arch}/jre/hotspot/normal/eclipse?project=jdk"
+  URL="https://adoptium.net/${adoptium_arch}/jre/hotspot/normal/eclipse?project=jdk"
 
   curl -fL --retry 3 --retry-delay 2 "${URL}" -o "${TMP}"
   rm -rf "${JRE_DIR:?}/"*
