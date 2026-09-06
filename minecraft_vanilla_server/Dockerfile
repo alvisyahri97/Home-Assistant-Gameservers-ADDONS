@@ -12,8 +12,8 @@ RUN apt-get update \
     sed \
     grep \
     findutils \
-    tar \
-    xz-utils \
+    unzip \
+    libcurl4 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
